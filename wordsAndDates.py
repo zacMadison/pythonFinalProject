@@ -9,9 +9,7 @@ programRunning = 1
 
 
 # seems useful ->(https://www.w3resource.com/python-exercises/string/python-data-type-string-exercise-12.php)
-# Next: Make fetch and process the correct databases
-# Next Next: process words in the tweets and exclude common words
-# final: output order of common words
+# todo: fix word counting, order words, fix dtype error, add way to exit program
 
 
 # recieve input from user for which month to use
@@ -72,33 +70,43 @@ def findMonth(database, targetMonth):
     # attempted to solve dtype error: unsuccessful https://stackoverflow.com/questions/24251219/pandas-read-csv-low-memory-and-dtype-options
     dataFrame = pd.read_csv(filePath)
 
-    #used for loop
+    # used for loop
     completed = 1
 
+    # dictionary used to count repeated words
+    wordsRepeated = {}
     # row will be incremented through each loop
     row = 0
     date_column = 'created_at'
+    tweet_column = 'text'
     while completed == 1:
         row += 1
-        # Note: dates are not all in order, best to continue interating loop after the month that is being looked for and find another way to end look
-        # also, running this also returns dtype error, doesnt seem to affect output right now
+        # Note: dates are not all in order, best to continue iterating loop after the month that is being looked for and find another way to end look
+        # also, running this also returns dtype error, doesn't seem to affect output right now
         # this will add the words in post to a list in the future
         if targetMonth in dataFrame.at[row, date_column]:
-            print("mon found")
+            tweet = dataFrame.at[row, tweet_column]
+            for word in tweet:
+                if word in wordsRepeated:
+                    wordsRepeated[word] += 1
+                else:
+                    wordsRepeated[word] = 1
+
         else:
             completed = 1
 
         # This is for testing will be used to change files later
-        if database[currentDatabase] == 0:
-            completed = 0
-        elif row == len(dataFrame) - 1:
+
+        if row == len(dataFrame) - 1:
             row = 0
             currentDatabase += 1
 
-
-            print("reached end of file, changing to next file")
-            filePath = "BTCP" + str(database[currentDatabase]) + ".csv"
-            dataFrame = pd.read_csv(filePath)
+            if database[currentDatabase] == 0:
+                completed = 0
+                print(wordsRepeated)
+            else:
+                filePath = "BTCP" + str(database[currentDatabase]) + ".csv"
+                dataFrame = pd.read_csv(filePath)
 
 
 
