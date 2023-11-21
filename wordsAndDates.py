@@ -9,7 +9,7 @@ programRunning = 1
 
 
 # seems useful ->(https://www.w3resource.com/python-exercises/string/python-data-type-string-exercise-12.php)
-# todo: fix word counting, order words, fix dtype error, add way to exit program
+# todo: order words, exclude words, and seperate links and word ( I think links might actually more useful than words)
 
 
 # recieve input from user for which month to use
@@ -86,6 +86,7 @@ def findMonth(database, targetMonth):
         # this will add the words in post to a list in the future
         if targetMonth in dataFrame.at[row, date_column]:
             tweet = dataFrame.at[row, tweet_column]
+            tweet = tweet.split()
             for word in tweet:
                 if word in wordsRepeated:
                     wordsRepeated[word] += 1
