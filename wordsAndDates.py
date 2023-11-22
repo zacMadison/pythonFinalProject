@@ -9,7 +9,7 @@ programRunning = 1
 
 
 # seems useful ->(https://www.w3resource.com/python-exercises/string/python-data-type-string-exercise-12.php)
-# todo: order words, exclude words, and seperate links and word ( I think links might actually more useful than words)
+# todo: exclude words, and separate links and words ( I think links might actually more useful than words)
 
 
 # recieve input from user for which month to use
@@ -56,8 +56,23 @@ def recieveMonth():
             receivingInput = 0
         else:
             print("Invalid input, please try again.")
+    wordAmount = int(input("How many words do you want: "))
+    return targetMonth, databases, wordAmount
 
-    return targetMonth, databases
+
+def sortWords(words, wordNum):
+    sortedDict = {}
+    keys = list(words.keys())
+
+    while wordNum != 0:
+        Highest = keys[0]
+        for word in words:
+            if words[word] > words[Highest]:
+                Highest = word
+        sortedDict[Highest] = words.pop(Highest)
+        wordNum -= 1
+    return sortedDict
+
 
 
 def findMonth(database, targetMonth):
@@ -104,6 +119,7 @@ def findMonth(database, targetMonth):
 
             if database[currentDatabase] == 0:
                 completed = 0
+                wordsRepeated = sortWords(wordsRepeated, num_of_words)
                 print(wordsRepeated)
             else:
                 filePath = "BTCP" + str(database[currentDatabase]) + ".csv"
@@ -112,5 +128,5 @@ def findMonth(database, targetMonth):
 
 
 while programRunning == 1:
-    targetMonth, databases = recieveMonth()
+    targetMonth, databases, num_of_words = recieveMonth()
     findMonth(databases, targetMonth)
