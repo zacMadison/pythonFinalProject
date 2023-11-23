@@ -2,19 +2,17 @@ import pandas as pd
 
 programRunning = 1
 
-# Lists that contain the corresponding databases for faster processing, the user will input what month they want
-# and it will use the list to read the corresponding databases, only use may - Nov 2019
+excludedWords = ['the', 'bitcoin', 'a', 'and', 'btc', 'to', 'of', 'is', 'in', 'for', 'on', '-', 'i', 'with', 'it', 'that', 'at', '|', 'be', 'will', 'this', 'are', 'as', 'my', 'via', 'by', 'your', 'not', 'have', 'or', 'from', 'has', 'but', 'we', 'an', 'was', 'you']
 
 
-
-
-# seems useful ->(https://www.w3resource.com/python-exercises/string/python-data-type-string-exercise-12.php)
 # todo: exclude words, and separate links and words ( I think links might actually more useful than words)
 
 
 # recieve input from user for which month to use
 # if the database is zero program should stop running
 def recieveMonth():
+    # Lists that contain the corresponding databases for faster processing, the user will input what month they want
+    # and it will use the list to read the corresponding databases, only use may - Nov 2019
     may = [3,0]
     jun = [3, 4, 0]
     jul = [4, 5, 0]
@@ -96,20 +94,23 @@ def findMonth(database, targetMonth):
     tweet_column = 'text'
     while completed == 1:
         row += 1
-        # Note: dates are not all in order, best to continue iterating loop after the month that is being looked for and find another way to end look
-        # also, running this also returns dtype error, doesn't seem to affect output right now
-        # this will add the words in post to a list in the future
+        # running this also returns dtype error, doesn't seem to affect output right now
+        # This checks if the current row is for the target month
         if targetMonth in dataFrame.at[row, date_column]:
             tweet = dataFrame.at[row, tweet_column]
             tweet = tweet.split()
+            # this cycles through all words in the tweet
             for word in tweet:
-                if word in wordsRepeated:
-                    wordsRepeated[word] += 1
-                else:
-                    wordsRepeated[word] = 1
+                # removes hashtags to prevent the same word popping up twice and for readability
+                if '#' in word:
+                    print("hashtag replaced")
+                    word = word.replace('#', '')
 
-        else:
-            completed = 1
+                if word.lower() not in excludedWords:
+                    if word in wordsRepeated:
+                        wordsRepeated[word] += 1
+                    else:
+                        wordsRepeated[word] = 1
 
         # This is for testing will be used to change files later
 
