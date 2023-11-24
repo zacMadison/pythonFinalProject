@@ -5,7 +5,7 @@ programRunning = 1
 excludedWords = ['the', 'bitcoin', 'a', 'and', 'btc', 'to', 'of', 'is', 'in', 'for', 'on', '-', 'i', 'with', 'it', 'that', 'at', '|', 'be', 'will', 'this', 'are', 'as', 'my', 'via', 'by', 'your', 'not', 'have', 'or', 'from', 'has', 'but', 'we', 'an', 'was', 'you']
 
 
-# todo: exclude words, and separate links and words ( I think links might actually more useful than words)
+# todo: add menu, allow user to choose either links or words, clean up output
 
 
 # recieve input from user for which month to use
