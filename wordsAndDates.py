@@ -1,11 +1,35 @@
 import pandas as pd
+# pandas library documentation : https://pandas.pydata.org/docs/user_guide/index.html#user-guide
 
 programRunning = 1
+excludedWords = ['the', 'bitcoin', 'a', 'and', 'btc', 'to', 'of', 'is', 'in', 'for', 'on', '-', 'i', 'with', 'it', 'that', 'at', '|', 'be', 'will', 'this', 'are', 'as', 'my', 'via', 'by', 'your', 'not', 'have', 'or', 'from', 'has', 'but', 'we', 'an', 'was', 'you', 'crypto', 'blockchain']
 
-excludedWords = ['the', 'bitcoin', 'a', 'and', 'btc', 'to', 'of', 'is', 'in', 'for', 'on', '-', 'i', 'with', 'it', 'that', 'at', '|', 'be', 'will', 'this', 'are', 'as', 'my', 'via', 'by', 'your', 'not', 'have', 'or', 'from', 'has', 'but', 'we', 'an', 'was', 'you']
 
+# todo: let users choose between links and words
 
-# todo: add menu, allow user to choose either links or words, clean up output
+def menu():
+
+    inMenu = 1
+    while inMenu == 1:
+        userChoice = input(
+            "Welcome to the database word scraper\nIf you want to see or change the list of excluded words, type 'E'"
+            "\nIf you want to continue to the program press 'c'\nTo exit the program press Enter\n")
+        if userChoice.upper() == "E":
+            userChoice = input("This is the current list of excluded words \nIf you would like to add a word type 'A'\nIf you would like to remove a word type 'R'\nIf you would like to go back press Enter \n"
+                               "______________________________________________\n" + str(excludedWords) + '\n')
+            if userChoice.upper() == "A":
+                excludedWords.append(input("What would you like to add to the list: "))
+            elif userChoice.upper() == "R":
+                excludedWords.remove(input("What would you like to remove from the list: "))
+        elif userChoice.upper() == "C":
+
+            global targetMonth, databases, num_of_words
+            while programRunning == 1:
+                targetMonth, databases, num_of_words = recieveMonth()
+                findMonth(databases, targetMonth)
+        elif userChoice == "":
+            exit()
+
 
 
 # recieve input from user for which month to use
@@ -23,7 +47,7 @@ def recieveMonth():
     receivingInput = 1
     months = [may, jun, jul, aug, sep, oct, nov]
     while receivingInput == 1:
-        targetMonth = input("Please input a month between May and Nov by typing the first 3 letter of the month: ")
+        targetMonth = input("\nIf you want to go back press 'B', if you want to exit the program type 'exit' Enter\n\nPlease input a month between May and Nov by typing the first 3 letter of the month: ")
         if targetMonth.lower() in "may":
             targetMonth = "May"
             databases = may
@@ -52,6 +76,10 @@ def recieveMonth():
             targetMonth = "Nov"
             databases = nov
             receivingInput = 0
+        elif targetMonth.lower() == "b":
+            menu()
+        elif targetMonth == "exit":
+            exit()
         else:
             print("Invalid input, please try again.")
     wordAmount = int(input("How many words do you want: "))
@@ -60,20 +88,24 @@ def recieveMonth():
 
 def sortWords(words, wordNum):
     sortedDict = {}
-    keys = list(words.keys())
 
+    print("Word | Occurrences"
+          "\n---------------")
     while wordNum != 0:
+        keys = list(words.keys())
         Highest = keys[0]
         for word in words:
             if words[word] > words[Highest]:
                 Highest = word
-        sortedDict[Highest] = words.pop(Highest)
+        print(Highest + "    " + str(words.pop(Highest)))
+
         wordNum -= 1
     return sortedDict
 
 
 
 def findMonth(database, targetMonth):
+    global num_of_words
     print("processing, please wait...")
     # set up variable to read the csvs
     currentDatabase = 0
@@ -103,7 +135,7 @@ def findMonth(database, targetMonth):
             for word in tweet:
                 # removes hashtags to prevent the same word popping up twice and for readability
                 if '#' in word:
-                    print("hashtag replaced")
+
                     word = word.replace('#', '')
 
                 if word.lower() not in excludedWords:
@@ -121,13 +153,13 @@ def findMonth(database, targetMonth):
             if database[currentDatabase] == 0:
                 completed = 0
                 wordsRepeated = sortWords(wordsRepeated, num_of_words)
-                print(wordsRepeated)
+
+
+
+
             else:
                 filePath = "BTCP" + str(database[currentDatabase]) + ".csv"
                 dataFrame = pd.read_csv(filePath)
 
 
-
-while programRunning == 1:
-    targetMonth, databases, num_of_words = recieveMonth()
-    findMonth(databases, targetMonth)
+menu()
