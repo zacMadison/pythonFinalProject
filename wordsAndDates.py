@@ -1,12 +1,22 @@
-import pandas as pd
+import pandas as pd, json, nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
 # pandas library documentation : https://pandas.pydata.org/docs/user_guide/index.html#user-guide
 
 programRunning = 1
-excludedWords = ['the', 'bitcoin', 'a', 'and', 'btc', 'to', 'of', 'is', 'in', 'for', 'on', '-', 'i', 'with', 'it', 'that', 'at', '|', 'be', 'will', 'this', 'are', 'as', 'my', 'via', 'by', 'your', 'not', 'have', 'or', 'from', 'has', 'but', 'we', 'an', 'was', 'you', 'crypto', 'blockchain']
+# This loads the list of exclusions so you can sto running the program but keep the list, if it is not present it creates one
+try:
+    with open('exclusions.txt', 'r') as fp:
+        excludedWords = json.load(fp)
+except json.decoder.JSONDecodeError:
+        excludedWords = ['the', 'bitcoin', 'a', 'and', 'btc', 'to', 'of', 'is', 'in', 'for', 'on', '-', 'i', 'with', 'it', 'that', 'at', '|', 'be', 'will', 'this', 'are', 'as', 'my', 'via', 'by', 'your', 'not', 'have', 'or', 'from', 'has', 'but', 'we', 'an', 'was', 'you', 'crypto', 'blockchain']
+except FileNotFoundError:
+    excludedWords = ['the', 'bitcoin', 'a', 'and', 'btc', 'to', 'of', 'is', 'in', 'for', 'on', '-', 'i', 'with', 'it',
+                     'that', 'at', '|', 'be', 'will', 'this', 'are', 'as', 'my', 'via', 'by', 'your', 'not', 'have',
+                     'or', 'from', 'has', 'but', 'we', 'an', 'was', 'you', 'crypto', 'blockchain']
 
 
-# todo: let users choose between links and words
 
+# This is the program starts, allows the user to change the exclusions list
 def menu():
 
     inMenu = 1
@@ -14,6 +24,7 @@ def menu():
         userChoice = input(
             "Welcome to the database word scraper\nIf you want to see or change the list of excluded words, type 'E'"
             "\nIf you want to continue to the program press 'c'\nTo exit the program press Enter\n")
+        # allows user to view and change exclusion list
         if userChoice.upper() == "E":
             userChoice = input("This is the current list of excluded words \nIf you would like to add a word type 'A'\nIf you would like to remove a word type 'R'\nIf you would like to go back press Enter \n"
                                "______________________________________________\n" + str(excludedWords) + '\n')
@@ -28,6 +39,8 @@ def menu():
                 targetMonth, databases, num_of_words = recieveMonth()
                 findMonth(databases, targetMonth)
         elif userChoice == "":
+            with open('exclusions.txt', 'w') as fp:
+                json.dump(excludedWords, fp)
             exit()
 
 
@@ -35,8 +48,7 @@ def menu():
 # recieve input from user for which month to use
 # if the database is zero program should stop running
 def recieveMonth():
-    # Lists that contain the corresponding databases for faster processing, the user will input what month they want
-    # and it will use the list to read the corresponding databases, only use may - Nov 2019
+    # Lists that contain the corresponding databases for faster processing
     may = [3,0]
     jun = [3, 4, 0]
     jul = [4, 5, 0]
@@ -45,7 +57,7 @@ def recieveMonth():
     oct = [7, 8, 0]
     nov = [8, 0]
     receivingInput = 1
-    months = [may, jun, jul, aug, sep, oct, nov]
+    # allows the user to enter a month
     while receivingInput == 1:
         targetMonth = input("\nIf you want to go back press 'B', if you want to exit the program type 'exit' Enter\n\nPlease input a month between May and Nov by typing the first 3 letter of the month: ")
         if targetMonth.lower() in "may":
@@ -78,17 +90,22 @@ def recieveMonth():
             receivingInput = 0
         elif targetMonth.lower() == "b":
             menu()
-        elif targetMonth == "exit":
+        elif targetMonth.lower() == "exit":
+            with open("exclusions.txt", 'w') as fp:
+                json.dump(excludedWords, fp)
             exit()
         else:
             print("Invalid input, please try again.")
     wordAmount = int(input("How many words do you want: "))
     return targetMonth, databases, wordAmount
 
-
+# This finds what the most repeated words are and prints them out
+# This will use a loop to find what the most repeated word is, and at the end it pops the item, lowers the amount of
+# remaining words and does it again until all the words have been printed
 def sortWords(words, wordNum):
     sortedDict = {}
-
+    # prevents the program from returning an empty word
+    words.pop("")
     print("Word | Occurrences"
           "\n---------------")
     while wordNum != 0:
@@ -100,20 +117,25 @@ def sortWords(words, wordNum):
         print(Highest + "    " + str(words.pop(Highest)))
 
         wordNum -= 1
-    return sortedDict
 
 
 
+# finds the target month in the database and then read the tweet to find how often each word is repeated
 def findMonth(database, targetMonth):
     global num_of_words
     print("processing, please wait...")
-    # set up variable to read the csvs
+    # set up for variables
+    # sets up for sentiment analysis
+    sia = SentimentIntensityAnalyzer()
+    count = 0
+    # used to remove punctuation
+    punc = '''!()-[]{};:'"\,<>./?@#%^&*_~'''
+    # tracks how many databases have been searched
     currentDatabase = 0
     filePath = 'BTCP' + str(database[currentDatabase]) + '.csv'
 
-    # dataFrames are used by the module pandas, the reason I chose this module over csv is that it has more functionality
-    # attempted to solve dtype error: unsuccessful https://stackoverflow.com/questions/24251219/pandas-read-csv-low-memory-and-dtype-options
-    dataFrame = pd.read_csv(filePath)
+    # This program uses pandas to read file, as it is the best way I found to search the files
+    dataFrame = pd.read_csv(filePath, dtype={"created_at": str}, low_memory=False)
 
     # used for loop
     completed = 1
@@ -126,40 +148,46 @@ def findMonth(database, targetMonth):
     tweet_column = 'text'
     while completed == 1:
         row += 1
-        # running this also returns dtype error, doesn't seem to affect output right now
-        # This checks if the current row is for the target month
+        # checks to see if the current row is in the current row
         if targetMonth in dataFrame.at[row, date_column]:
+            # sentimpent analysis
             tweet = dataFrame.at[row, tweet_column]
+            currentSent = sia.polarity_scores(tweet)
+            if count == 0:
+                totalSent = currentSent
+            else:
+                totalSent['neg'] += currentSent['neg']
+                totalSent['pos'] += currentSent['pos']
+                totalSent['neu'] += currentSent['neu']
+            count += 1
+            # following code processes the individual tweets
             tweet = tweet.split()
             # this cycles through all words in the tweet
             for word in tweet:
-                # removes hashtags to prevent the same word popping up twice and for readability
-                if '#' in word:
-
-                    word = word.replace('#', '')
-
+                # Replaces punctuation that may be connected to a word we want
+                for letter in word:
+                    if letter in punc:
+                        word = word.replace(letter, "")
+                # if word is already been found it increments the connected value, otherwise create a new entry
                 if word.lower() not in excludedWords:
                     if word in wordsRepeated:
                         wordsRepeated[word] += 1
                     else:
                         wordsRepeated[word] = 1
-
-        # This is for testing will be used to change files later
-
+        # this  will change the file, or end the program if it is already on teh last database (database = 0)
         if row == len(dataFrame) - 1:
             row = 0
             currentDatabase += 1
 
             if database[currentDatabase] == 0:
+
                 completed = 0
-                wordsRepeated = sortWords(wordsRepeated, num_of_words)
-
-
-
-
+                sortWords(wordsRepeated, num_of_words)
+                # prints sentiment analysis
+                print("Tweets in this months were:\n" + str(round(totalSent['pos']*100/count, 2)) + "% positive\n" + str(round(totalSent['neg']*100/count, 2)) + "% negative\n" + str(round(totalSent['neu']*100/count, 2))+"% neutral")
             else:
                 filePath = "BTCP" + str(database[currentDatabase]) + ".csv"
-                dataFrame = pd.read_csv(filePath)
+                dataFrame = pd.read_csv(filePath, dtype={"created_at": str}, low_memory=False)
 
 
 menu()
