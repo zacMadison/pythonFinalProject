@@ -14,7 +14,8 @@ except FileNotFoundError:
                      'that', 'at', '|', 'be', 'will', 'this', 'are', 'as', 'my', 'via', 'by', 'your', 'not', 'have',
                      'or', 'from', 'has', 'but', 'we', 'an', 'was', 'you', 'crypto', 'blockchain']
 
-
+# program starts by asking if user would like to use sentiment analysis
+SentAnalysis = input("Would you like to use sentiment analysis? y/n: ")
 
 # This is the program starts, allows the user to change the exclusions list
 def menu():
@@ -122,7 +123,7 @@ def sortWords(words, wordNum):
 
 # finds the target month in the database and then read the tweet to find how often each word is repeated
 def findMonth(database, targetMonth):
-    global num_of_words
+    global num_of_words, SentAnalysis
     print("processing, please wait...")
     # set up for variables
     # sets up for sentiment analysis
@@ -150,16 +151,17 @@ def findMonth(database, targetMonth):
         row += 1
         # checks to see if the current row is in the current row
         if targetMonth in dataFrame.at[row, date_column]:
-            # sentimpent analysis
+            # sentiment analysis
             tweet = dataFrame.at[row, tweet_column]
-            currentSent = sia.polarity_scores(tweet)
-            if count == 0:
-                totalSent = currentSent
-            else:
-                totalSent['neg'] += currentSent['neg']
-                totalSent['pos'] += currentSent['pos']
-                totalSent['neu'] += currentSent['neu']
-            count += 1
+            if SentAnalysis.lower() == "y":
+                currentSent = sia.polarity_scores(tweet)
+                if count == 0:
+                    totalSent = currentSent
+                else:
+                    totalSent['neg'] += currentSent['neg']
+                    totalSent['pos'] += currentSent['pos']
+                    totalSent['neu'] += currentSent['neu']
+                count += 1
             # following code processes the individual tweets
             tweet = tweet.split()
             # this cycles through all words in the tweet
@@ -184,7 +186,8 @@ def findMonth(database, targetMonth):
                 completed = 0
                 sortWords(wordsRepeated, num_of_words)
                 # prints sentiment analysis
-                print("Tweets in this months were:\n" + str(round(totalSent['pos']*100/count, 2)) + "% positive\n" + str(round(totalSent['neg']*100/count, 2)) + "% negative\n" + str(round(totalSent['neu']*100/count, 2))+"% neutral")
+                if SentAnalysis.lower() == "y":
+                    print("Tweets in this months were:\n" + str(round(totalSent['pos']*100/count, 2)) + "% positive\n" + str(round(totalSent['neg']*100/count, 2)) + "% negative\n" + str(round(totalSent['neu']*100/count, 2))+"% neutral")
             else:
                 filePath = "BTCP" + str(database[currentDatabase]) + ".csv"
                 dataFrame = pd.read_csv(filePath, dtype={"created_at": str}, low_memory=False)
