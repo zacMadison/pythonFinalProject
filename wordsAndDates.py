@@ -109,14 +109,17 @@ def sortWords(words, wordNum):
     words.pop("")
     print("Word | Occurrences"
           "\n---------------")
+    # finds the most frequently occuring words
     while wordNum != 0:
         keys = list(words.keys())
         Highest = keys[0]
         for word in words:
             if words[word] > words[Highest]:
                 Highest = word
+        # prints the Highest word then pops it to prevent it from repeating
         print(Highest + "    " + str(words.pop(Highest)))
 
+        # keeps track of how many words are left to find
         wordNum -= 1
 
 
