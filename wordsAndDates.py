@@ -179,13 +179,14 @@ def findMonth(database, targetMonth):
                         wordsRepeated[word] += 1
                     else:
                         wordsRepeated[word] = 1
-        # this  will change the file, or end the program if it is already on teh last database (database = 0)
+        # checks to see if its at the end of the file
         if row == len(dataFrame) - 1:
+            # resets row and changes database
             row = 0
             currentDatabase += 1
 
+            # if the database value is zero, then all databases needed for the month have been searched
             if database[currentDatabase] == 0:
-
                 completed = 0
                 sortWords(wordsRepeated, num_of_words)
                 # prints sentiment analysis
