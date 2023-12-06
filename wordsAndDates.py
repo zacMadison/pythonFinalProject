@@ -187,7 +187,10 @@ def findMonth(database, targetMonth):
                 sortWords(wordsRepeated, num_of_words)
                 # prints sentiment analysis
                 if SentAnalysis.lower() == "y":
-                    print("Tweets in this months were:\n" + str(round(totalSent['pos']*100/count, 2)) + "% positive\n" + str(round(totalSent['neg']*100/count, 2)) + "% negative\n" + str(round(totalSent['neu']*100/count, 2))+"% neutral")
+                    print("Tweets in this months were:\n" + str(
+                        round(totalSent['pos'] * 100 / count, 2)) + "% positive\n" + str(
+                        round(totalSent['neg'] * 100 / count, 2)) + "% negative\n" + str(
+                        round(totalSent['neu'] * 100 / count, 2)) + "% neutral")
             else:
                 filePath = "BTCP" + str(database[currentDatabase]) + ".csv"
                 dataFrame = pd.read_csv(filePath, dtype={"created_at": str}, low_memory=False)
